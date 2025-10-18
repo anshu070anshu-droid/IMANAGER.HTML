@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --accent: #BF092F;
+            --dark: #132440;
+            --bg: #f7f8fc;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--dark);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #hamburger {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        #hamburger:hover {
+            background: var(--dark);
+        }
+
+        #sidenav {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            z-index: 10;
+            padding: 20px;
+        }
+
+        #sidenav.open {
+            left: 0;
+        }
+
+        #sidenav ul {
+            list-style: none;
+        }
+
+        #sidenav li {
+            margin: 20px 0;
+        }
+
+        #sidenav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            display: block;
+            padding: 10px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        #sidenav a:hover,
+        #sidenav a.active {
+            background: var(--accent);
+            color: var(--white);
+        }
+
+        main {
+            flex: 1;
+            padding: 20px;
+            margin-left: 0;
+            transition: var(--transition);
+        }
+
+        main.shifted {
+            margin-left: 250px;
+        }
+
+        section {
+            display: none;
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        section.active {
+            display: block;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: var(--accent);
+            font-size: 2em;
+        }
+
+        .card p {
+            font-weight: 500;
+        }
+
+        form {
+            display: grid;
+            gap: 15px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        button {
+            background: var(--accent);
+            color: var(--white);
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+
+        button:hover {
+            background: var(--dark);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: var(--dark);
+            color: var(--white);
+        }
+
+        .actions button {
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 0.8em;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--dark);
+            color: var(--white);
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+            z-index: 30;
+            transition: var(--transition);
+        }
+
+        #toast.show {
+            display: block;
+        }
+
+        #toast button {
+            background: transparent;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            #sidenav {
+                width: 100%;
+                left: -100%;
+            }
+
+            main.shifted {
+                margin-left: 0;
+            }
+
+            #sidenav.open {
+                left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button id="hamburger">☰</button>
+    <nav id="sidenav">
+        <ul>
+            <li><a href="#dashboard" class="active">Dashboard</a></li>
+            <li><a href="#add-record">Add Record</a></li>
+            <li><a href="#transactions">Transactions</a></li>
+            <li><a href="#backup">Backup</a></li>
+            <li><a href="#clear-data">Clear All Data</a></li>
+            <li><a href="#help">Help/About</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section id="dashboard" class="active">
+            <h2>Dashboard</h2>
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3 id="total-items">0</h3>
+                    <p>Total Items</p>
+                </div>
+                <div class="card">
+                    <h3 id="total-stock-qty">0</h3>
+                    <p>Total Stock Quantity</p>
+                </div>
+                <div class="card">
+                    <h3 id="total-revenue">₹0</h3>
+                    <p>Total Revenue</p>
+                </div>
+                <div class="card">
+                    <h3 id="total-expense">₹0</h3>
+                    <p>Total Expense</p>
+                </div>
+                <div class="card">
+                    <h3 id="net-profit">₹0</h3>
+                    <p>Net Profit</p>
+                </div>
+            </div>
+        </section>
+        <section id="add-record">
+            <h2>Add Record</h2>
+            <form id="add-form">
+                <input type="text" id="name" placeholder="Name" required>
+                <select id="type" required>
+                    <option value="">Select Type</option>
+                    <option value="stock">Stock</option>
+                    <option value="expense">Expense</option>
+                    <option value="revenue">Revenue</option>
+                </select>
+                <input type="text" id="category" placeholder="Category" required>
+                <input type="number" id="quantity" placeholder="Quantity" min="0" required>
+                <input type="number" id="price" placeholder="Price Per Unit" min="0" step="0.01" required>
+                <input type="date" id="date" required>
+                <textarea id="notes" placeholder="Notes"></textarea>
+                <div>Total: <span id="total-preview">₹0</span></div>
+                <button type="submit">Add Record</button>
+            </form>
+        </section>
+        <section id="transactions">
+            <h2>Transactions</h2>
+            <table id="records-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                        <th>Date</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+        <section id="backup">
+            <h2>Backup</h2>
+            <p>Last Saved: <span id="last-saved">Never</span></p>
+            <button id="export-btn">Export JSON</button>
+            <input type="file" id="import-file" accept=".json">
+            <button id="import-btn">Import JSON</button>
+        </section>
+        <section id="clear-data">
+            <h2>Clear All Data</h2>
+            <p>Are you sure? This action cannot be undone.</p>
+            <button id="clear-btn">Clear All</button>
+        </section>
+        <section id="help">
+            <h2>Help/About</h2>
+            <p>Inventory Pro is a simple web app for managing inventory, expenses, and revenues.</p>
+            <p>Version 1.0 | Built with HTML, CSS, JS</p>
+        </section>
+    </main>
+    <div id="toast"></div>
+    <script>
+        const STORAGE_KEY = 'inventory_pro_v1';
+        const LAST_SAVED_KEY = 'inventory_pro_last_saved';
+
+        let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        let lastDeleted = null;
+
+        const sidenav = document.getElementById('sidenav');
+        const main = document.querySelector('main');
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.querySelectorAll('#sidenav a');
+        const sections = document.querySelectorAll('section');
+        const toast = document.getElementById('toast');
+
+        const totalItemsEl = document.getElementById('total-items');
+        const totalStockQtyEl = document.getElementById('total-stock-qty');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const totalExpenseEl = document.getElementById('total-expense');
+        const netProfitEl = document.getElementById('net-profit');
+
+        const addForm = document.getElementById('add-form');
+        const nameInput = document.getElementById('name');
+        const typeInput = document.getElementById('type');
+        const categoryInput = document.getElementById('category');
+        const quantityInput = document.getElementById('quantity');
+        const priceInput = document.getElementById('price');
+        const dateInput = document.getElementById('date');
+        const notesInput = document.getElementById('notes');
+        const totalPreview = document.getElementById('total-preview');
+
+        const tableBody = document.querySelector('#records-table tbody');
+
+        const lastSavedEl = document.getElementById('last-saved');
+        const exportBtn = document.getElementById('export-btn');
+        const importFile = document.getElementById('import-file');
+        const importBtn = document.getElementById('import-btn');
+        const clearBtn = document.getElementById('clear-btn');
+
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+            const now = new Date().toLocaleString();
+            localStorage.setItem(LAST_SAVED_KEY, now);
+            lastSavedEl.textContent = now;
+        }
+
+        function loadLastSaved() {
+            const saved = localStorage.getItem(LAST_SAVED_KEY);
+            lastSavedEl.textContent = saved || 'Never';
+        }
+
+        function showToast(msg, showUndo = false) {
+            toast.innerHTML = msg;
+            if (showUndo) {
+                toast.innerHTML += ' <button onclick="undoDelete()">Undo</button>';
+            }
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 5000);
+        }
+
+        function updateDashboard() {
+            let totalItems = 0;
+            let totalStockQty = 0;
+            let totalRevenue = 0;
+            let totalExpense = 0;
+
+            records.forEach(rec => {
+                if (rec.type === 'stock') {
+                    totalItems++;
+                    totalStockQty += rec.quantity;
+                } else if (rec.type === 'revenue') {
+                    totalRevenue += rec.total;
+                } else if (rec.type === 'expense') {
+                    totalExpense += rec.total;
+                }
+            });
+
+            totalItemsEl.textContent = totalItems;
+            totalStockQtyEl.textContent = totalStockQty;
+            totalRevenueEl.textContent = `₹${totalRevenue.toFixed(2)}`;
+            totalExpenseEl.textContent = `₹${totalExpense.toFixed(2)}`;
+            netProfitEl.textContent = `₹${(totalRevenue - totalExpense).toFixed(2)}`;
+        }
+
+        function renderTable() {
+            tableBody.innerHTML = '';
+            records.forEach((rec, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td contenteditable="false">${rec.name}</td>
+                    <td contenteditable="false">${rec.type}</td>
+                    <td contenteditable="false">${rec.quantity}</td>
+                    <td contenteditable="false">₹${rec.price.toFixed(2)}</td>
+                    <td>₹${rec.total.toFixed(2)}</td>
+                    <td contenteditable="false">${rec.date}</td>
+                    <td contenteditable="false">${rec.notes}</td>
+                    <td class="actions">
+                        <button onclick="editRecord(${index})">Edit</button>
+                        <button onclick="deleteRecord(${index})">Delete</button>
+                        <button style="display:none;" onclick="saveEdit(${index})">Save</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function editRecord(index) {
+            const row = tableBody.rows[index];
+            for (let i = 0; i < 7; i++) { // First 7 columns editable except type maybe, but allow
+                if (i !== 4) { // Skip total
+                    row.cells[i].contentEditable = true;
+                }
+            }
+            row.querySelector('button:nth-child(1)').style.display = 'none';
+            row.querySelector('button:nth-child(2)').style.display = 'none';
+            row.querySelector('button:nth-child(3)').style.display = 'inline';
+        }
+
+        function saveEdit(index) {
+            const row = tableBody.rows[index];
+            records[index].name = row.cells[0].textContent;
+            records[index].type = row.cells[1].textContent;
+            records[index].quantity = parseFloat(row.cells[2].textContent) || 0;
+            records[index].price = parseFloat(row.cells[3].textContent.replace('₹', '')) || 0;
+            records[index].total = records[index].quantity * records[index].price;
+            records[index].date = row.cells[5].textContent;
+            records[index].notes = row.cells[6].textContent;
+
+            saveData();
+            renderTable();
+            updateDashboard();
+            showToast('Record edited');
+        }
+
+        function deleteRecord(index) {
+            lastDeleted = { ...records[index], index };
+            records.splice(index, 1);
+            saveData();
+            renderTable();
+            updateDashboard();
+            showToast('Record deleted', true);
+        }
+
+        function undoDelete() {
+            if (lastDeleted) {
+                records.splice(lastDeleted.index, 0, lastDeleted);
+                lastDeleted = null;
+                saveData();
+                renderTable();
+                updateDashboard();
+                showToast('Delete undone');
+            }
+        }
+
+        function switchSection(hash) {
+            navLinks.forEach(link => link.classList.remove('active'));
+            sections.forEach(sec => sec.classList.remove('active'));
+            const targetLink = document.querySelector(`a[href="${hash}"]`);
+            const targetSec = document.querySelector(hash);
+            if (targetLink && targetSec) {
+                targetLink.classList.add('active');
+                targetSec.classList.add('active');
+            }
+            sidenav.classList.remove('open');
+            main.classList.remove('shifted');
+        }
+
+        hamburger.addEventListener('click', () => {
+            sidenav.classList.toggle('open');
+            main.classList.toggle('shifted');
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                switchSection(link.getAttribute('href'));
+            });
+        });
+
+        quantityInput.addEventListener('input', updateTotalPreview);
+        priceInput.addEventListener('input', updateTotalPreview);
+
+        function updateTotalPreview() {
+            const qty = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            totalPreview.textContent = `₹${(qty * price).toFixed(2)}`;
+        }
+
+        addForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const newRecord = {
+                id: Date.now(),
+                name: nameInput.value,
+                type: typeInput.value,
+                category: categoryInput.value,
+                quantity: parseFloat(quantityInput.value) || 0,
+                price: parseFloat(priceInput.value) || 0,
+                total: (parseFloat(quantityInput.value) || 0) * (parseFloat(priceInput.value) || 0),
+                date: dateInput.value,
+                notes: notesInput.value
+            };
+            records.push(newRecord);
+            saveData();
+            addForm.reset();
+            updateTotalPreview();
+            renderTable();
+            updateDashboard();
+            showToast('Record added');
+        });
+
+        exportBtn.addEventListener('click', () => {
+            const blob = new Blob([JSON.stringify(records)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'inventory_pro_backup.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Data exported');
+        });
+
+        importBtn.addEventListener('click', () => {
+            const file = importFile.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        // Merge: append and assign new ids
+                        imported.forEach(rec => {
+                            rec.id = Date.now() + Math.random();
+                            records.push(rec);
+                        });
+                        saveData();
+                        renderTable();
+                        updateDashboard();
+                        showToast('Data imported and merged');
+                    } catch (err) {
+                        showToast('Invalid JSON');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            if (confirm('Clear all data?')) {
+                records = [];
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(LAST_SAVED_KEY);
+                renderTable();
+                updateDashboard();
+                loadLastSaved();
+                showToast('All data cleared');
+            }
+        });
+
+        // Init
+        renderTable();
+        updateDashboard();
+        loadLastSaved();
+        switchSection('#dashboard');
+    </script>
+</body>
+</html>
